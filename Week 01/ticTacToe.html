@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TicTacToe</title>
+    </head>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #tic-container {
+            width: 300px;
+            height: 300px;
+            display: grid;
+            grid-template-rows: repeat(3, 100px);
+            grid-template-columns: repeat(3, 100px);
+            background: #c6e2ff;
+        }
+
+        .tic-item {
+            display: inline-block;
+            text-align: center;
+            line-height: 100px;
+            border: 1px solid #fff;
+            font-size: 30px;
+        }
+    </style>
+
+    <body>
+        <div id="tic-container"></div>
+    </body>
+
+    <script>
+
+        {
+            // 三行三列的棋盘
+            const chessListRow = [
+                [0, 0, 2],
+                [0, 1, 0],
+                [0, 0, 0]
+            ];
+
+            // 数字与图形的对应关系
+            const numberAndFigureMap = {
+                0: '',
+                1: '⭕️',
+                2: '❌'
+            }
+
+            // 连续 3 颗就会赢
+            const chessType = 3;
+
+            let first = 1;
+
+            let chessList = clone(chessListRow);
+
+            (function start() {
+                // 初始化棋盘，并添加对应监听事件
+                show();
+
+            })()
+
+            // 初始化生成棋盘
+            function show() {
+                let container = document.getElementById('tic-container');
+                container.innerHTML = '';
+
+                chessList.map((row, rowId) => {
+                    row.map((col, colId) => {
+                        const newEle = document.createElement('div');
+                        newEle.setAttribute('class', 'tic-item');
+                        newEle.innerHTML = numberAndFigureMap[col];
+                        newEle.addEventListener('click', () => userMove(newEle, rowId, colId));
+                        container.appendChild(newEle);
+                    })
+                })
+            }
+
+            // 电脑填充对应的图形
+            function computerMove() {
+                let choice = bestChoice(chessList, first);
+                if (choice.point) {
+                    chessList[choice.point[0]][choice.point[1]] = first;
+                }
+                if (check(chessList, first)) {
+                    if (window.confirm(`${numberAndFigureMap[first]} is winner!`)) {
+                        chessList = clone(chessListRow);
+                        show();
+                    }
+                }
+                first = chessType - first;
+                show();
+            }
+
+            // 点击后填充对应的图形
+            function userMove(dom, rowId, colId) {
+                chessList[rowId][colId] = first;
+                if (check(chessList, first)) {
+                    if (window.confirm(`${numberAndFigureMap[first]} is winner!`)) {
+                        chessList = clone(chessListRow);
+                        show();
+                    }
+                }                
+                show();
+                first = chessType - first;
+                computerMove();
+            }
+
+            // 判断是否胜利。3x3 的棋盘中，三横、三纵、两斜
+            function check(list, man) {
+                // 三横
+                for(let i = 0; i < list.length; i++) {
+                    let win = true;
+                    for(let j = 0; j < list[i].length; j++) {
+                        if (list[i][j] !== man) {
+                            win = false;
+                        }
+                    }
+                    if (win) {
+                        return win;
+                    }
+                }
+
+                // 三纵
+                for(let i = 0; i < list.length; i++) {
+                    let win = true;
+                    for(let j = 0; j < list[i].length; j++) {
+                        if (list[j][i] !== man) {
+                            win = false;
+                        }
+                    }
+                    if (win) {
+                        return win;
+                    }
+                }
+
+                {
+                    // 逆斜
+                    let win = true;
+                    for(let i = 0; i < list.length; i++) {
+                        for(let j = 0; j < list[i].length; j++) {
+                            if (i === j && list[i][j] !== man) {
+                                win = false;
+                            }
+                        }
+                    }
+
+                    if (win) return win;
+                }
+
+                {
+                    // 顺斜
+                    let win = true;
+                    for(let i = 0; i < list.length; i++) {
+                        for(let j = 0; j < list[i].length; j++) {
+                            if (i + j === chessType - 1 && list[i][j] !== man) {
+                                win = false;
+                            }
+                        }
+                    }
+
+                    if (win) return win;
+                }
+            }
+
+            // 判断是否快赢了
+            function willWin(list, man) {
+                let result = null;
+                for(let i = 0; i < list.length; i++) {
+                    for (let j = 0; j < list[i].length; j++) {
+                        // 只判断没有“下”过的地方
+                        if (list[i][j] === 0) {
+                            let temList = clone(list);
+                            temList[i][j] = man;
+                            if (check(temList, man)) {
+                                result = [i, j];
+                            }
+                        }
+                    }
+                }
+                return result;
+            }
+
+            // 策略：1、可以赢的点 2、不会输的点
+            function bestChoice(list, man) {
+                let p = null;
+                let res = {
+                    point: null,
+                    result: -2
+                };
+                if (p = willWin(list, man)) {
+                    res.point = p;
+                    res.result = 1;
+                    return res;
+                }
+                for(let i = 0; i < list.length; i++) {
+                    for(let j = 0; j < list[i].length; j++) {
+                        // 只判断未“下”的地方
+                        if (!list[i][j]) {
+                            let temp = clone(list);
+                            temp[i][j] = man;
+                            
+                            let r = bestChoice(temp, 3 - man).result;
+
+                            if (-r > res.result) {
+                                res.result = -r;
+                                res.point = [i, j];
+                            }
+                        }
+                    }
+                }
+                if (!res.point) {
+                    res.result = 0
+                }
+                return res;
+
+            }
+
+            function clone(list) {
+                return JSON.parse(JSON.stringify(list));
+            }
+        }
+    
+    </script>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>TrafficSignal</title>
+  <style>
+    #traffic-signal {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="traffic-signal"></div>
+
+  <script>
+      {
+            const colorMap = {
+                red: 10000,
+                yellow: 2000,
+                green: 5000
+            };
+            const signal = document.getElementById('traffic-signal');
+
+            start();
+
+            async function start() {
+                while(true) {
+                    for(let color in colorMap) {
+                        setColor(signal, color);
+                        await wait(colorMap[color]);
+                    }
+                }
+            }
+
+            function setColor(dom, color) {
+                dom.style.backgroundColor = color;
+            }
+            
+            function wait(duration) {
+                return new Promise(function(resolve, reject) {
+                    setTimeout(resolve, duration);
+                })
+            }
+        }
+  </script>
+</body>
+</html>

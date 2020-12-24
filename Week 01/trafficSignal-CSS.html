@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>TrafficSignal</title>
+  <style>
+    .container {
+      width: 500px;
+      height: 500px;
+      background: #fff;
+    }
+    #traffic-signal {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      animation: trafficSignal linear 6s infinite;
+    }
+
+    @keyframes trafficSignal {
+        0%, 50% {
+            background: green;
+        }
+        51%, 67% {
+            background: yellow;
+        }
+        68%, 100% {
+            background: red;
+        }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="traffic-signal"></div>
+  </div>
+</body>
+</html>
