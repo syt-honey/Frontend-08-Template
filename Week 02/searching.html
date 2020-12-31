@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .map-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .save-button {
+            margin: 20px auto;
+            padding: 5px 20px;
+            border-radius: 4px;
+            background: #4F8BEE;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+
+        #search-container {
+            width: 700px;
+            font-size: 0;
+        }
+
+        .search-cell {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            /* 消除多余的空隙：父级设置为0，当前元素正常设置。*/
+            font-size: 15px;
+            background: #d0cdcd;
+            border-bottom: 1px solid #fff;
+            border-right: 1px solid #fff;
+            cursor: pointer;
+        }
+    </style>
+    
+    <body>
+        <div class="map-container">
+            <button class="save-button" onclick="savePath()">保存</button>
+            <div id="search-container"></div>
+        </div>
+    </body>
+
+    <script>
+        {
+            const rowMap = sessionStorage['map'] ? JSON.parse(sessionStorage['map']) : Array(10000).fill(0);
+
+            const mapSize = [100, 100];
+
+            // 注册全局监听事件
+            let clear = false;
+            let mouseDown = false;
+
+            document.addEventListener('mousedown', (e) => {
+                mouseDown = true;
+                clear = (e.which === 3);
+            });
+
+            document.addEventListener("mouseup", () => mouseDown = false);
+            // document.addEventListener("contextmenu", e => e.preventDefault());
+
+            // 初始化
+            (function start() {
+                show();
+            })();
+
+            function show() {
+                const container = document.getElementById('search-container');
+                container.innerHTML = '';
+
+                // 创建临时 Dom 列表，最后再加在 container 上去
+                const itemList = document.createDocumentFragment();
+                
+                rowMap.forEach((item, index) => {
+                    const newEl = document.createElement('div');
+                    newEl.setAttribute('class', 'search-cell');
+
+                    if (item === 1) {
+                        newEl.style.background = 'black';
+                    }
+                    
+                    newEl.addEventListener('mouseover', () => fill(newEl, index));
+                    itemList.appendChild(newEl);
+                })
+
+                container.appendChild(itemList);
+            }
+
+            function fill (dom, index) {
+                if (mouseDown) {
+                    if (clear) {
+                        // TODO 进不来
+                        dom.style.background = "#d0cdcd";
+                        rowMap[index] = 0;
+                    } else {
+                        // 划过的地方设置为 1，背景设为 gray
+                        dom.style.background = "black";
+                        rowMap[index] = 1;
+                    }
+                }
+            }
+
+            // 广度优先搜索路径
+            function path(map, start, end) {
+                const queue = [start];
+
+                let result = false;
+
+                function insert(index, x, y) {
+                    if (map[index]) {
+                        return;
+                    }
+
+                    if (x < 0 || x >= 100 || y < 0 || y >= 100) {
+                        return;
+                    }
+
+                    map[index] = 2;
+                    queue.push(index)
+                }
+
+                while(queue.length) {
+                    let item = queue.shift();
+                    if (item === end) {
+                        result = true;
+                        break;
+                    }
+                    // 一维数组下标转二维数组下标
+                    insert(item, Math.floor(item / 3) - 1, item % 3);
+                    insert(item, Math.floor(item / 3) + 1, item % 3);
+                    insert(item, Math.floor(item / 3), item % 3 - 1);
+                    insert(item, Math.floor(item / 3), item % 3 + 1);
+                }
+
+                return result;
+
+
+            }
+
+            function savePath() {
+                sessionStorage['map'] = JSON.stringify(rowMap);
+                window.alert('保存成功！'); 
+            }
+
+
+        }
+    </script>
+</html>
