@@ -15,7 +15,7 @@
         }
 
         .save-button {
-            margin: 20px auto;
+            margin: 20px auto 10px;
             padding: 5px 20px;
             border-radius: 4px;
             background: #4F8BEE;
@@ -25,6 +25,12 @@
             outline: none;
         }
 
+        .tip {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #777373;
+        }
+
         #search-container {
             width: 700px;
             font-size: 0;
@@ -32,6 +38,7 @@
 
         .search-cell {
             display: inline-block;
+            position: relative;
             width: 6px;
             height: 6px;
             /* 消除多余的空隙：父级设置为0，当前元素正常设置。*/
@@ -41,117 +48,223 @@
             border-right: 1px solid #fff;
             cursor: pointer;
         }
+
+        .search-cell:hover:after {
+            position: absolute;
+            left: 15px;
+            top: 5px;
+            width: 70px;
+            padding: 5px;
+            text-align: center;
+            background-color: rgba(0, 0, 0, .5);
+            border-radius: 5px;
+            color: #fff;
+            content: attr(positionOfPoint);
+            z-index: 2;
+        }
     </style>
     
     <body>
         <div class="map-container">
             <button class="save-button" onclick="savePath()">保存</button>
+            <div class="tip">提示：支持 ⌘ + s 快速保存</div>
             <div id="search-container"></div>
         </div>
     </body>
 
+    <script src="../utils/index.js"></script>
+
     <script>
-        {
-            const rowMap = sessionStorage['map'] ? JSON.parse(sessionStorage['map']) : Array(10000).fill(0);
+        const rowMap = sessionStorage['map'] ? JSON.parse(sessionStorage['map']) : Array(10000).fill(0);
 
-            const mapSize = [100, 100];
+        // 注册全局监听事件
+        let clear = false;
+        let mouseDown = false;
 
-            // 注册全局监听事件
-            let clear = false;
-            let mouseDown = false;
+        document.addEventListener('mousedown', (e) => {
+            mouseDown = true;
+            clear = e.which === 3;
+        });
 
-            document.addEventListener('mousedown', (e) => {
-                mouseDown = true;
-                clear = (e.which === 3);
-            });
+        document.addEventListener("mouseup", () => mouseDown = false);
+        document.addEventListener('contextmenu', (e) =>  e.preventDefault())
 
-            document.addEventListener("mouseup", () => mouseDown = false);
-            // document.addEventListener("contextmenu", e => e.preventDefault());
-
-            // 初始化
-            (function start() {
-                show();
-            })();
-
-            function show() {
-                const container = document.getElementById('search-container');
-                container.innerHTML = '';
-
-                // 创建临时 Dom 列表，最后再加在 container 上去
-                const itemList = document.createDocumentFragment();
-                
-                rowMap.forEach((item, index) => {
-                    const newEl = document.createElement('div');
-                    newEl.setAttribute('class', 'search-cell');
-
-                    if (item === 1) {
-                        newEl.style.background = 'black';
-                    }
-                    
-                    newEl.addEventListener('mouseover', () => fill(newEl, index));
-                    itemList.appendChild(newEl);
-                })
-
-                container.appendChild(itemList);
+        // 自定义组合键保存内容
+        document.addEventListener("keydown", (e) => {
+            if (e.key === 's' && e.metaKey) {
+                savePath();
             }
+            e.preventDefault();
+        });
 
-            function fill (dom, index) {
-                if (mouseDown) {
-                    if (clear) {
-                        // TODO 进不来
-                        dom.style.background = "#d0cdcd";
-                        rowMap[index] = 0;
-                    } else {
-                        // 划过的地方设置为 1，背景设为 gray
-                        dom.style.background = "black";
-                        rowMap[index] = 1;
-                    }
-                }
-            }
+        const container = document.getElementById('search-container');
 
-            // 广度优先搜索路径
-            function path(map, start, end) {
-                const queue = [start];
+        (function start() {
+            show();
+        })();
 
-                let result = false;
+        function show() {
+            container.innerHTML = '';
 
-                function insert(index, x, y) {
-                    if (map[index]) {
-                        return;
-                    }
+            // 创建临时 Dom 列表，最后再加在 container 上去
+            const itemList = document.createDocumentFragment();
 
-                    if (x < 0 || x >= 100 || y < 0 || y >= 100) {
-                        return;
-                    }
+            rowMap.forEach((item, index) => {
+                const newEl = document.createElement('div');
+                newEl.setAttribute('class', 'search-cell');
+                newEl.setAttribute('positionOfPoint', `(${Math.floor(index / 100)}, ${index % 100})`);
 
-                    map[index] = 2;
-                    queue.push(index)
+                if (item === 1) {
+                    newEl.style.background = 'black';
                 }
 
-                while(queue.length) {
-                    let item = queue.shift();
-                    if (item === end) {
-                        result = true;
-                        break;
-                    }
-                    // 一维数组下标转二维数组下标
-                    insert(item, Math.floor(item / 3) - 1, item % 3);
-                    insert(item, Math.floor(item / 3) + 1, item % 3);
-                    insert(item, Math.floor(item / 3), item % 3 - 1);
-                    insert(item, Math.floor(item / 3), item % 3 + 1);
+                newEl.addEventListener('mouseover', () => fill(newEl, index));
+                itemList.appendChild(newEl);
+            })
+
+            container.appendChild(itemList);
+        }
+
+        function fill (dom, index) {
+            if (mouseDown) {
+                if (clear) {
+                    dom.style.background = "#d0cdcd";
+                    rowMap[index] = 0;
+                } else {
+                    // 划过的地方设置为 1，背景设为 black
+                    dom.style.background = "black";
+                    rowMap[index] = 1;
+                }
+            }
+        }
+
+        // 广度优先搜索路径
+        async function findPath(map, start, end) {
+
+            // 如果 start 或 end 没有在棋盘内，则返回
+            if (outOfMap(start) || outOfMap(end)) {
+                window.alert('请输入有效的起始点和终点，该地图大小为 100x100。');
+                return;
+            }
+
+            // 如果 start 或 end 为"墙"，或周围全是"墙"，则返回
+            if (isObstacle(start) || isObstacle(end)) {
+                window.alert('请输入有效的起始点和终点，起始点或终点只能为未图画的点。');
+                return;
+            }
+
+            // TODO 逻辑有问题，需要判断周围所有的点是否可达
+            if (!reachable(start) || !reachable(end)) {
+                window.alert('请输入有效的起始点和终点，起始点或终点不可以是不可到达的点。');
+                return;
+            }
+
+            let table = Object.create(map);
+            let queue = new Sorted([start], (a, b) => distance(a) - distance(b));
+
+            let result = null;
+
+            function reachable ([x, y]) {
+                return !(isObstacle([x - 1, y])
+                        && isObstacle([x + 1, y])
+                        && isObstacle([x, y - 1])
+                        && isObstacle([x, y + 1]));
+            }
+
+            function isObstacle([x, y]) {
+                return outOfMap([x, y]) ? true : map[x * 100 + y];
+            }
+
+            function outOfMap ([x, y]) {
+                return x < 0 || x >= 100 || y < 0 || y >= 100;
+            }
+
+            function distance(point) {
+                return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2;
+            }
+
+            async function insert(x, y, pre) {
+                if (table[y * 100 + x]) {
+                    return;
                 }
 
-                return result;
+                if (outOfMap([x, y])) {
+                    return;
+                }
 
-
+                await window.utils.sleep(5);
+                container.children[y * 100 + x].style.background = 'lightgreen';
+                table[y * 100 + x] = pre;
+                queue.give([x, y])
             }
 
-            function savePath() {
-                sessionStorage['map'] = JSON.stringify(rowMap);
-                window.alert('保存成功！'); 
+            while(queue.length) {
+                let [x, y] = queue.take();
+                if (x === end[0] && y === end[1]) {
+                    // 绘制路径
+                    const path = [];
+
+                    container.children[y * 100 + x].style.background = 'purple';
+                    while (x !== start[0] || y !== start[1]) {
+                        path.push([x, y]);
+                        [x, y] = table[y * 100 + x];
+                        await window.utils.sleep(5);
+                        container.children[y * 100 + x].style.background = 'purple';
+                    }
+                    result = path;
+                    break;
+                }
+
+                await insert(x - 1, y, [x, y]);
+                await insert(x + 1, y, [x, y]);
+                await insert(x, y - 1, [x, y]);
+                await insert(x, y + 1, [x, y]);
             }
 
+            return result;
+        }
 
+        function savePath() {
+            sessionStorage['map'] = JSON.stringify(rowMap);
+            window.alert('保存成功！');
+        }
+
+        /**
+         * 取的时候拿最小的那个
+         */
+        class Sorted {
+            constructor(data, compare) {
+                this.data = data.slice();
+                this.compare = compare || ((a, b) => a - b);
+                this.length = this.data.length;
+            }
+
+            /**
+             * 获取最小值
+             * @returns {*}
+             */
+            take() {
+                if (!this.data.length) {
+                    return;
+                }
+                let minData = this.data[0];
+                let minIndex = 0;
+
+                for(let i = 0; i < this.data.length; ++i) {
+                    if (this.compare(this.data[i], minData) < 0) {
+                        minData = this.data[i];
+                        minIndex = i;
+                    }
+                }
+
+                this.data[minIndex] = this.data[this.data.length - 1];
+                this.data.pop();
+                return minData;
+            }
+
+            give(v) {
+                this.data.push(v);
+            }
         }
     </script>
 </html>
