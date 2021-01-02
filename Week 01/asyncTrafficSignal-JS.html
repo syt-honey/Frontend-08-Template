@@ -15,37 +15,31 @@
 </head>
 <body>
   <div id="traffic-signal"></div>
-
-  <script>
-      {
-            const colorMap = {
-                red: 10000,
-                yellow: 2000,
-                green: 5000
-            };
-            const signal = document.getElementById('traffic-signal');
-
-            start();
-
-            async function start() {
-                while(true) {
-                    for(let color in colorMap) {
-                        setColor(signal, color);
-                        await wait(colorMap[color]);
-                    }
-                }
-            }
-
-            function setColor(dom, color) {
-                dom.style.backgroundColor = color;
-            }
-            
-            function wait(duration) {
-                return new Promise(function(resolve, reject) {
-                    setTimeout(resolve, duration);
-                })
-            }
-        }
-  </script>
 </body>
+<script src="../utils/index.js"></script>
+<script>
+    {
+          const colorMap = {
+              red: 1000,
+              yellow: 2000,
+              green: 5000
+          };
+          const signal = document.getElementById('traffic-signal');
+
+          start();
+
+          async function start() {
+              while(true) {
+                  for(let color in colorMap) {
+                      setColor(signal, color);
+                      await window.utils.sleep(colorMap[color]);
+                  }
+              }
+          }
+
+          function setColor(dom, color) {
+              dom.style.backgroundColor = color;
+          }
+      }
+</script>
 </html>

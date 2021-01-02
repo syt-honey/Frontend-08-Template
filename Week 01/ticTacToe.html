@@ -42,6 +42,8 @@
         <div id="tic-container"></div>
     </body>
 
+    <script src="../utils/index.js"></script>
+
     <script>
         {
             // 棋盘大小，[3, 3] 表示 3x3
@@ -108,7 +110,7 @@
                 show();
                 first = chessType - first;
                 // 过 1s 再响应
-                await wait(1000);
+                await window.utils.sleep(1000);
                 computerMove();
             }
 
@@ -254,12 +256,6 @@
 
             function clone(list) {
                 return JSON.parse(JSON.stringify(list));
-            }
-
-            function wait(duration) {
-                return new Promise((resolve, reject) => {
-                    setTimeout(resolve, duration);
-                })
             }
         }
     </script>
