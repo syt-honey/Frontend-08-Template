@@ -162,6 +162,8 @@
             let table = Object.create(map);
             let queue = new Sorted([start], (a, b) => distance(a) - distance(b));
 
+            container.children[start[0] * 100 + start[1]].style.background = 'red';
+
             let result = null;
 
             while(queue.length) {
@@ -171,15 +173,16 @@
                     const path = [];
 
                     // 将最终的终点也放入 path 中
-                    container.children[y * 100 + x].style.background = 'purple';
+                    container.children[x * 100 + y].style.background = 'red';
                     while (x !== start[0] || y !== start[1]) {
                         path.push([x, y]);
-                        [x, y] = table[y * 100 + x];
+                        [x, y] = table[x * 100 + y];
                         await window.utils.sleep(5);
-                        container.children[y * 100 + x].style.background = 'purple';
+                        if (x === start[0] && y === start[1])
+                            continue;
+                        container.children[x * 100 + y].style.background = 'purple';
                     }
                     path.push([x, y]);
-                    console.log(path);
                     result = path;
                     break;
                 }
@@ -191,7 +194,7 @@
             }
 
             async function insert(x, y, pre) {
-                if (table[y * 100 + x]) {
+                if (table[x * 100 + y]) {
                     return;
                 }
 
@@ -199,9 +202,11 @@
                     return;
                 }
 
-                await window.utils.sleep(30);
-                container.children[y * 100 + x].style.background = 'lightgreen';
-                table[y * 100 + x] = pre;
+                await window.utils.sleep(5);
+                if (x !== start[0] || y !== start[1]) {
+                    container.children[x * 100 + y].style.background = 'lightgreen';
+                }
+                table[x * 100 + y] = pre;
                 queue.give([x, y])
             }
 
