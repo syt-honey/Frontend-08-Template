@@ -1,11 +1,10 @@
-
 ## 一、前言
 
 在正式介绍这篇寻路算法文章之前，我想先简单讲讲两个经典的算法：深度优先搜索算法和广度优先搜索算法。
 
 ## 二、深度优先搜索
 
-深度优先搜索(Depth-First-Search，DFS)，是一种用于遍历或搜索树或图的算法。这个算法会尽可能深的搜索树的分支。我们一般使用堆数据结构来辅助实现 `DFS` 算法。
+深度优先搜索(Depth-First-Search，DFS)，是一种用于遍历搜索树或图的算法。这个算法会尽可能深的搜索树的分支。我们一般使用堆数据结构来辅助实现 `DFS` 算法。
 
 我们来看看 [wiki](https://zh.wikipedia.org/wiki/%E6%B7%B1%E5%BA%A6%E4%BC%98%E5%85%88%E6%90%9C%E7%B4%A2) 上的定义：
 > 这个算法会尽可能深的搜索树的分支。当节点 `v` 的所在边都已被探寻过，搜索将回溯到发现节点 `v` 的那条边的起始节点。这一过程一直进行到已发现从源节点可达的所有节点为止。如果还存在未被发现的节点，则选择其中一个作为源节点并重复以上过程，整个进程反复进行直到所有节点都被访问为止。
@@ -48,7 +47,7 @@
 
 ![BFS](https://github.com/syt-honey/study_picture/blob/master/album/BFS.png)
 
-`BFS` 有非常多的应用，在 [这篇文章中](https://time.geekbang.org/column/article/80011?utm_source=u_nav_web&utm_medium=u_nav_web&utm_term=u_nav_web) ，winter 老师也使用它来搜索计算过浏览器中有 JavaScript 有多少固有对象。
+`BFS` 有非常多的应用，在 [这篇文章中](https://time.geekbang.org/column/article/80011?utm_source=u_nav_web&utm_medium=u_nav_web&utm_term=u_nav_web) ，winter 老师也使用它来搜索计算过浏览器中有多少 JavaScript 固有对象。
 
 ## 四、寻路算法
 
@@ -201,7 +200,7 @@ li {
 }
 ```
 
-它的兼容性也非常好，除了 IE，市面上的浏览器基本都支持了。大家可以通过 [caniuse](https://caniuse.com/?search=flex) 这个来查看兼容性。
+它的兼容性也非常好。除了 IE，市面上的浏览器基本都支持了。大家可以通过 [caniuse](https://caniuse.com/?search=flex) 来查看它的兼容性。
 
 ### （2）CSS 属性顺序
 
@@ -221,7 +220,7 @@ li {
 
 ### （3）减少频繁的 DOM 操作，提高性能。
 
-这节课和上节课，老师都使用了遍历生成元素然后插入到父级元素上的这种方法。但是 JavaScript 操作 DOM 其实是非常慢的，尤其是当 DOM 节点很多的时候。我们使用时应该注意：
+这节课和上节课，老师都使用了遍历来生成元素然后插入到父级元素上的这种方法。但是 JavaScript 操作 DOM 其实是非常慢的，尤其是当 DOM 节点很多的时候。我们使用时应该注意：
   * 缓存已经访问过的元素；
   * 使用 DocumentFragment 暂存 DOM，然后再插入 DOM 树；
   * 使用 className 来操纵元素的样式；
