@@ -164,6 +164,51 @@
 
             let result = null;
 
+            while(queue.length) {
+                let [x, y] = queue.take();
+                if (x === end[0] && y === end[1]) {
+                    // 绘制路径
+                    const path = [];
+
+                    // 将最终的终点也放入 path 中
+                    container.children[y * 100 + x].style.background = 'purple';
+                    while (x !== start[0] || y !== start[1]) {
+                        path.push([x, y]);
+                        [x, y] = table[y * 100 + x];
+                        await window.utils.sleep(5);
+                        container.children[y * 100 + x].style.background = 'purple';
+                    }
+                    path.push([x, y]);
+                    console.log(path);
+                    result = path;
+                    break;
+                }
+
+                await insert(x - 1, y, [x, y]);
+                await insert(x + 1, y, [x, y]);
+                await insert(x, y - 1, [x, y]);
+                await insert(x, y + 1, [x, y]);
+            }
+
+            async function insert(x, y, pre) {
+                if (table[y * 100 + x]) {
+                    return;
+                }
+
+                if (outOfMap([x, y])) {
+                    return;
+                }
+
+                await window.utils.sleep(30);
+                container.children[y * 100 + x].style.background = 'lightgreen';
+                table[y * 100 + x] = pre;
+                queue.give([x, y])
+            }
+
+            function distance(point) {
+                return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2;
+            }
+
             function reachable ([x, y]) {
                 return !(isObstacle([x - 1, y])
                         && isObstacle([x + 1, y])
@@ -177,48 +222,6 @@
 
             function outOfMap ([x, y]) {
                 return x < 0 || x >= 100 || y < 0 || y >= 100;
-            }
-
-            function distance(point) {
-                return (point[0] - end[0]) ** 2 + (point[1] - end[1]) ** 2;
-            }
-
-            async function insert(x, y, pre) {
-                if (table[y * 100 + x]) {
-                    return;
-                }
-
-                if (outOfMap([x, y])) {
-                    return;
-                }
-
-                await window.utils.sleep(5);
-                container.children[y * 100 + x].style.background = 'lightgreen';
-                table[y * 100 + x] = pre;
-                queue.give([x, y])
-            }
-
-            while(queue.length) {
-                let [x, y] = queue.take();
-                if (x === end[0] && y === end[1]) {
-                    // 绘制路径
-                    const path = [];
-
-                    container.children[y * 100 + x].style.background = 'purple';
-                    while (x !== start[0] || y !== start[1]) {
-                        path.push([x, y]);
-                        [x, y] = table[y * 100 + x];
-                        await window.utils.sleep(5);
-                        container.children[y * 100 + x].style.background = 'purple';
-                    }
-                    result = path;
-                    break;
-                }
-
-                await insert(x - 1, y, [x, y]);
-                await insert(x + 1, y, [x, y]);
-                await insert(x, y - 1, [x, y]);
-                await insert(x, y + 1, [x, y]);
             }
 
             return result;
