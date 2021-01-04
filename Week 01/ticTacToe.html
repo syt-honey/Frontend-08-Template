@@ -1,262 +1,269 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>TicTacToe</title>
-    </head>
+  <head>
+    <title>TicTacToe</title>
+  </head>
 
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --main-theme: #c6e2ff;
+    }
+
+    #tic-container {
+      width: calc(var(--chess-row) * 80px);
+      height: calc(var(--chess-col) * 80px);
+      display: grid;
+      grid-template-rows: repeat(var(--chess-row), 80px);
+      grid-template-columns: repeat(var(--chess-col), 80px);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--main-theme);
+    }
+
+    .tic-item {
+      display: inline-block;
+      text-align: center;
+      line-height: 80px;
+      border: 1px solid #fff;
+      font-size: 30px;
+    }
+  </style>
+
+  <body>
+    <div id="tic-container"></div>
+  </body>
+
+  <script src="../utils/index.js"></script>
+
+  <script>
+    {
+      // 棋盘大小，[3, 3] 表示 3x3
+      const chessSize = [3, 3];
+
+      // 连续 3 颗就会赢
+      const chessType = 3;
+
+      // TODO 根据设置的棋盘大小生成初始棋盘。里面的内容和 numberAndFigureMap 有对应关系
+      // 生成原始棋盘
+      const chessListRow = [
+        [0, 0, 0],
+        [0, 0, 0],
+        [0, 0, 0],
+      ];
+
+      // 操作的棋盘
+      let chessList = clone(chessListRow);
+
+      // 数字与图形的对应关系
+      const numberAndFigureMap = {
+        0: "",
+        1: "⭕️",
+        2: "❌",
+      };
+
+      // 当前下棋的数字，如：1 对应 ⭕️
+      let first = 1;
+
+      (function start() {
+        // 初始化棋盘，并添加对应监听事件
+        show();
+      })();
+
+      // 初始化生成棋盘
+      function show() {
+        let container = document.getElementById("tic-container");
+        container.innerHTML = "";
+        container.style.setProperty("--chess-row", chessSize[0]);
+        container.style.setProperty("--chess-col", chessSize[1]);
+
+        chessList.forEach((row, rowId) => {
+          row.forEach((col, colId) => {
+            const newEle = document.createElement("div");
+            newEle.setAttribute("class", "tic-item");
+            newEle.innerHTML = numberAndFigureMap[col];
+            newEle.addEventListener("click", () => userMove(rowId, colId));
+            container.appendChild(newEle);
+          });
+        });
+      }
+
+      let sleepStart = false;
+
+      // 点击后填充对应的图形
+      async function userMove(rowId, colId) {
+        if (chessList[rowId][colId] !== 0 || sleepStart) {
+          return;
+        }
+        chessList[rowId][colId] = first;
+        // 判断当前是否赢
+        if (check(chessList, first)) {
+          window.alert(`${numberAndFigureMap[first]} 赢啦!`);
+          // 重置，show
+          reset();
+          return;
+        }
+        show();
+        first = chessType - first;
+        // 过 1s 再响应
+        sleepStart = true;
+        await window.utils.sleep(1000);
+        sleepStart = false;
+        computerMove();
+      }
+
+      // 电脑填充对应的图形
+      function computerMove() {
+        let choice = bestChoice(chessList, first);
+        if (choice.point) {
+          chessList[choice.point[0]][choice.point[1]] = first;
+        }
+        if (check(chessList, first)) {
+          // if () {
+          window.alert(`${numberAndFigureMap[first]} 赢啦!`);
+          reset();
+          return;
+          // }
+        }
+        if (!choice.point) {
+          // if () {
+          window.alert(`合棋哦～`);
+          reset();
+          return;
+          // }
+        }
+        first = chessType - first;
+        show();
+      }
+
+      // TODO 更加通用的判断方法
+      // 判断是否胜利。3x3 的棋盘中，三横、三纵、两斜
+      function check(list, man) {
+        // 三横
+        for (let i = 0; i < list.length; i++) {
+          let win = true;
+          for (let j = 0; j < list[i].length; j++) {
+            if (list[i][j] !== man) {
+              win = false;
+            }
+          }
+          if (win) return win;
         }
 
-        :root {
-            --main-theme: #c6e2ff;
+        // 三纵
+        for (let i = 0; i < list.length; i++) {
+          let win = true;
+          for (let j = 0; j < list[i].length; j++) {
+            if (list[j][i] !== man) {
+              win = false;
+            }
+          }
+          if (win) return win;
         }
 
-        #tic-container {
-            width: calc(var(--chess-row) * 80px);
-            height: calc(var(--chess-col) * 80px);
-            display: grid;
-            grid-template-rows: repeat(var(--chess-row), 80px);
-            grid-template-columns: repeat(var(--chess-col), 80px);
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--main-theme);
-        }
-
-        .tic-item {
-            display: inline-block;
-            text-align: center;
-            line-height: 80px;
-            border: 1px solid #fff;
-            font-size: 30px;
-        }
-
-    </style>
-
-    <body>
-        <div id="tic-container"></div>
-    </body>
-
-    <script src="../utils/index.js"></script>
-
-    <script>
         {
-            // 棋盘大小，[3, 3] 表示 3x3
-            const chessSize = [3, 3];
-
-            // 连续 3 颗就会赢
-            const chessType = 3;
-
-            // TODO 根据设置的棋盘大小生成初始棋盘。里面的内容和 numberAndFigureMap 有对应关系
-            // 生成原始棋盘
-            const chessListRow = [
-                [0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0]
-            ];
-
-            // 操作的棋盘
-            let chessList = clone(chessListRow);
-
-            // 数字与图形的对应关系
-            const numberAndFigureMap = {
-                0: "",
-                1: "⭕️",
-                2: "❌"
-            };
-
-            // 当前下棋的数字，如：1 对应 ⭕️
-            let first = 1;
-
-            (function start() {
-                // 初始化棋盘，并添加对应监听事件
-                show();
-            })();
-
-            // 初始化生成棋盘
-            function show() {
-                let container = document.getElementById("tic-container");
-                container.innerHTML = "";
-                container.style.setProperty("--chess-row", chessSize[0]);
-                container.style.setProperty("--chess-col", chessSize[1]);
-
-                chessList.forEach((row, rowId) => {
-                    row.forEach((col, colId) => {
-                    const newEle = document.createElement("div");
-                    newEle.setAttribute("class", "tic-item");
-                    newEle.innerHTML = numberAndFigureMap[col];
-                    newEle.addEventListener("click", () => userMove(rowId, colId));
-                    container.appendChild(newEle);
-                    });
-                });
+          // 逆斜
+          let win = true;
+          for (let i = 0; i < list.length; i++) {
+            for (let j = 0; j < list[i].length; j++) {
+              if (i === j && list[i][j] !== man) {
+                win = false;
+              }
             }
-
-            // 点击后填充对应的图形
-            async function userMove(rowId, colId) {
-                chessList[rowId][colId] = first;
-                // 判断当前是否赢
-                if (check(chessList, first)) {
-                    if (window.confirm(`${numberAndFigureMap[first]} 赢啦!`)) {
-                        // 重置，show
-                        reset();
-                        return;
-                    }
-                }
-                show();
-                first = chessType - first;
-                // 过 1s 再响应
-                await window.utils.sleep(1000);
-                computerMove();
-            }
-
-            // 电脑填充对应的图形
-            function computerMove() {
-                let choice = bestChoice(chessList, first);
-                if (choice.point) {
-                    chessList[choice.point[0]][choice.point[1]] = first;
-                }
-                if (check(chessList, first)) {
-                    if (window.confirm(`${numberAndFigureMap[first]} 赢啦!`)) {
-                        reset();
-                        return;
-                    }
-                }
-                if (!choice.point) {
-                    if (window.confirm(`合棋哦～`)) {
-                        reset();
-                        return;
-                    }
-                }
-                first = chessType - first;
-                show();
-            }
-
-            // TODO 更加通用的判断方法
-            // 判断是否胜利。3x3 的棋盘中，三横、三纵、两斜
-            function check(list, man) {
-                // 三横
-                for (let i = 0; i < list.length; i++) {
-                    let win = true;
-                    for (let j = 0; j < list[i].length; j++) {
-                        if (list[i][j] !== man) {
-                            win = false;
-                        }
-                    }
-                    if (win) return win;
-                }
-
-                // 三纵
-                for (let i = 0; i < list.length; i++) {
-                    let win = true;
-                    for (let j = 0; j < list[i].length; j++) {
-                        if (list[j][i] !== man) {
-                            win = false;
-                        }
-                    }
-                    if (win) return win;
-                }
-
-                {
-                    // 逆斜
-                    let win = true;
-                    for (let i = 0; i < list.length; i++) {
-                        for (let j = 0; j < list[i].length; j++) {
-                            if (i === j && list[i][j] !== man) {
-                                win = false;
-                            }
-                        }
-                    }
-                    if (win) return win;
-                }
-
-                {
-                    // 顺斜
-                    let win = true;
-                    for (let i = 0; i < list.length; i++) {
-                        for (let j = 0; j < list[i].length; j++) {
-                            if (i + j === chessType - 1 && list[i][j] !== man) {
-                                win = false;
-                            }
-                        }
-                    }
-                    if (win) return win;
-                }
-            }
-
-            // 判断是否快赢了
-            function willWin(list, man) {
-                let result = null;
-                for (let i = 0; i < list.length; i++) {
-                    for (let j = 0; j < list[i].length; j++) {
-                        // 只判断没有“下”过的地方
-                        if (list[i][j] === 0) {
-                            let temList = clone(list);
-                            temList[i][j] = man;
-                            
-                            if (check(temList, man)) {
-                                result = [i, j];
-                            }
-                        }
-                    }
-                }
-                return result;
-            }
-
-            // TODO 更多的策略
-            // 策略：1、可以赢的点 2、不会输的点
-            function bestChoice(list, man) {
-                let p = null;
-                let res = {
-                    point: null,
-                    result: -2
-                };
-
-                // 1. 如果自己可以赢，返回可以赢的点
-                if ((p = willWin(list, man))) {
-                    res.point = p;
-                    res.result = 1;
-                    return res;
-                }
-
-                // 2. 如果没有可以赢的点，找对方最优的点
-                for (let i = 0; i < list.length; i++) {
-                    for (let j = 0; j < list[i].length; j++) {
-                        // 只判断未“下”的地方
-                        if (list[i][j]) {
-                            continue;
-                        }
-                        let temp = clone(list);
-                        temp[i][j] = man;
-
-                        let r = bestChoice(temp, chessType - man).result;
-
-                        if (-r > res.result) {
-                            res.result = -r;
-                            res.point = [i, j];
-                        }
-                    }
-                }
-                if (!res.point) {
-                    res.result = 0;
-                }
-                return res;
-            }
-
-            // 重置棋盘列表
-            function reset() {
-                chessList = [];
-                chessList = clone(chessListRow);
-                show();
-            }
-
-            function clone(list) {
-                return JSON.parse(JSON.stringify(list));
-            }
+          }
+          if (win) return win;
         }
-    </script>
+
+        {
+          // 顺斜
+          let win = true;
+          for (let i = 0; i < list.length; i++) {
+            for (let j = 0; j < list[i].length; j++) {
+              if (i + j === chessType - 1 && list[i][j] !== man) {
+                win = false;
+              }
+            }
+          }
+          if (win) return win;
+        }
+      }
+
+      // 判断是否快赢了
+      function willWin(list, man) {
+        let result = null;
+        for (let i = 0; i < list.length; i++) {
+          for (let j = 0; j < list[i].length; j++) {
+            // 只判断没有“下”过的地方
+            if (list[i][j] === 0) {
+              let temList = clone(list);
+              temList[i][j] = man;
+
+              if (check(temList, man)) {
+                result = [i, j];
+              }
+            }
+          }
+        }
+        return result;
+      }
+
+      // TODO 更多的策略
+      // 策略：1、可以赢的点 2、不会输的点
+      function bestChoice(list, man) {
+        let p = null;
+        let res = {
+          point: null,
+          result: -2,
+        };
+
+        // 1. 如果自己可以赢，返回可以赢的点
+        if ((p = willWin(list, man))) {
+          res.point = p;
+          res.result = 1;
+          return res;
+        }
+
+        // 2. 如果没有可以赢的点，找对方最优的点
+        for (let i = 0; i < list.length; i++) {
+          for (let j = 0; j < list[i].length; j++) {
+            // 只判断未“下”的地方
+            if (list[i][j]) {
+              continue;
+            }
+            let temp = clone(list);
+            temp[i][j] = man;
+
+            let r = bestChoice(temp, chessType - man).result;
+
+            if (-r > res.result) {
+              res.result = -r;
+              res.point = [i, j];
+            }
+          }
+        }
+        if (!res.point) {
+          res.result = 0;
+        }
+        return res;
+      }
+
+      // 重置棋盘列表
+      function reset() {
+        chessList = [];
+        chessList = clone(chessListRow);
+        show();
+      }
+
+      function clone(list) {
+        return JSON.parse(JSON.stringify(list));
+      }
+    }
+  </script>
 </html>
