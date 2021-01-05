@@ -18,11 +18,11 @@
             margin: 20px auto 10px;
             padding: 5px 20px;
             border-radius: 4px;
+            border: none;
+            outline: none;
             background: #4F8BEE;
             color: #fff;
             cursor: pointer;
-            border: none;
-            outline: none;
         }
 
         .tip {
@@ -41,11 +41,11 @@
             position: relative;
             width: 6px;
             height: 6px;
+            border-bottom: 1px solid #fff;
+            border-right: 1px solid #fff;
             /* 消除多余的空隙：父级设置为0，当前元素正常设置。*/
             font-size: 15px;
             background: #d0cdcd;
-            border-bottom: 1px solid #fff;
-            border-right: 1px solid #fff;
             cursor: pointer;
         }
 
@@ -53,14 +53,14 @@
             position: absolute;
             left: 15px;
             top: 5px;
+            z-index: 2;
             width: 70px;
             padding: 5px;
-            text-align: center;
-            background-color: rgba(0, 0, 0, .5);
             border-radius: 5px;
+            background-color: rgba(0, 0, 0, .5);
+            text-align: center;
             color: #fff;
             content: attr(positionOfPoint);
-            z-index: 2;
         }
     </style>
     
