@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Arithmetic</title>
+    </head>
+
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .arithmetic-container {
+            width: 500px;
+            height: 500px;
+            margin: 150px auto;
+        }
+
+        .gen-btn {
+            margin-left: 20px;
+            padding: 8px 20px;
+            border-radius: 4px;
+            background: #4F8BEE;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .ari-input {
+            width: 200px;
+            padding: 7px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-family: PingFangSC-Regular, serif;
+        }
+
+        .gen-result {
+            display: block;
+            box-sizing: border-box;
+            margin-top: 20px;
+            padding: 5px 15px;
+            width: 100%;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            color: #606266;
+            background-color: #fff;
+            line-height: 1.5;
+        }
+
+        button,
+        input,
+        textarea {
+            border: none;
+            outline: none;
+        }
+
+        /* webkit内核的浏览器，如谷歌 */
+        .ari-input::-webkit-input-placeholder
+        {
+            opacity:1;
+            font-weight: normal;
+            color: #dcdfe6;
+        }
+
+        .ari-input:focus,
+        .gen-result:focus {
+            outline: none;
+            border-color: #409eff;
+        }
+    </style>
+    <body>
+        <div class="arithmetic-container">
+            <input class="ari-input" type="text" placeholder="请输入四则运算...">
+            <button class="gen-btn">生成分析结果</button>
+            <textarea class="gen-result" name="生成分析结果" id="" cols="30" rows="10"></textarea>
+        </div>
+    </body>
+    <script>
+        // LL 词法分析
+        const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+
+        const dir = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
+
+        // 返回一个序列的时候使用 yield
+        function* tokenize(source) {
+            let result = null;
+            let lastIndex = 0;
+
+            while(true) {
+                lastIndex = regexp.lastIndex;
+                result = regexp.exec(source);
+
+                // 如果跨度大于匹配到值的长度，则说明中间有未添加到捕获组的字符
+                if (!result || (regexp.lastIndex - lastIndex > result[0].length)) break;
+
+                let token = {
+                    type: null,
+                    value: null
+                };
+
+                for (let i = 0; i < dir.length; ++i) {
+                    if (result[i + 1]) {
+                        token.type = dir[i];
+                    }
+                }
+                token.value = result[0];
+                yield token;
+            }
+
+            yield {
+                type: "EOF"
+            }
+        }
+
+        let source = [];
+
+        for(let token of tokenize("10 + 25 * 2")) {
+            if (token.type !== "Whitespace" && token.type !== "LineTerminator") {
+                source.push(token);
+            }
+        }
+
+        // 语法分析
+
+        function Expression(tokens) {
+            if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "EOF") {
+                let node = {
+                    type: "Expression",
+                    children: [source.shift(), source.shift()]
+                };
+                source.unshift(node);
+                return node;
+            }
+            AdditiveExpression(source);
+            return Expression(source);
+        }
+
+        function AdditiveExpression(source) {
+            if (source[0].type === "MultiplicativeExpression") {
+                source[0] = {
+                    type: "AdditiveExpression",
+                    children: [source[0]]
+                };
+                return AdditiveExpression(source);
+            }
+
+            if (source[0].type === "AdditiveExpression" && source[1] && (source[1].type === '+' || source[1].type === '-')) {
+                let node = {
+                    type: "AdditiveExpression",
+                    operator: source[1].type,
+                    children: []
+                };
+                // 前三项
+                node.children.push(source.shift());
+                node.children.push(source.shift());
+                MultiplicativeExpression(source);
+                node.children.push(source.shift());
+                source.unshift(node);
+                return AdditiveExpression(source);
+            }
+
+            if (source[0].type === "AdditiveExpression") {
+                return source[0];
+            }
+
+            MultiplicativeExpression(source);
+            return AdditiveExpression(source);
+        }
+
+        function MultiplicativeExpression(source) {
+            if (source[0].type === "Number") {
+                source[0] = {
+                    type: "MultiplicativeExpression",
+                    children: [source[0]]
+                };
+                return MultiplicativeExpression(source);
+            }
+
+            if (source[0].type === "MultiplicativeExpression" && source[1] && (source[1].type === '*' || source[1].type === '/')) {
+                let node = {
+                    type: "MultiplicativeExpression",
+                    operator: source[1].type,
+                    children: []
+                };
+                // 前三项
+                node.children.push(source.shift());
+                node.children.push(source.shift());
+                node.children.push(source.shift());
+                source.unshift(node);
+                return MultiplicativeExpression(source);
+            }
+
+            if (source[0].type === "MultiplicativeExpression") {
+                return source[0];
+            }
+        }
+
+        const mul = Expression(source)
+        console.log(mul)
+
+    </script>
+</html>
