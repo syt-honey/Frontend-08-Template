@@ -14,6 +14,13 @@
             padding: 0;
         }
 
+        button,
+        input,
+        textarea {
+            border: none;
+            outline: none;
+        }
+
         .arithmetic-container {
             width: 500px;
             height: 500px;
@@ -40,7 +47,7 @@
         .gen-result {
             display: block;
             box-sizing: border-box;
-            margin-top: 20px;
+            /*margin-top: 20px;*/
             padding: 5px 15px;
             width: 100%;
             border: 1px solid #dcdfe6;
@@ -48,13 +55,6 @@
             color: #606266;
             background-color: #fff;
             line-height: 1.5;
-        }
-
-        button,
-        input,
-        textarea {
-            border: none;
-            outline: none;
         }
 
         /* webkit内核的浏览器，如谷歌 */
@@ -70,12 +70,56 @@
             outline: none;
             border-color: #409eff;
         }
+
+        .error-tip {
+            visibility: hidden;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            background-color: #fef0f0;
+            color: #f56c6c;
+        }
+
+        .error-text {
+            margin-left: 28px;
+        }
+
+        .error-icon {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #f56c6c;
+        }
+
+        .error-icon::before,.error-icon::after{
+            content: "";
+            position: absolute;
+            background-color: #fff;
+            height: 9px;
+            width: 1px;
+            top: 50%;
+            left: 50%;
+            margin-top: -5px;
+        }
+
+        .error-icon::before{ transform: rotate(45deg); }
+        .error-icon::after{ transform: rotate(-45deg); }
+
     </style>
     <body>
         <div class="arithmetic-container">
-            <input class="ari-input" type="text" placeholder="请输入四则运算...">
-            <button class="gen-btn">生成分析结果</button>
-            <textarea class="gen-result" name="生成分析结果" id="" cols="30" rows="10"></textarea>
+            <input class="ari-input" id="arithmetic" type="text" placeholder="请输入四则运算...">
+            <button class="gen-btn" onclick="genResult()">生成分析结果</button>
+            <div class="error-tip">
+                <div class="error-icon"></div>
+                <div class="error-text"></div>
+            </div>
+            <textarea class="gen-result" id="result" name="生成分析结果" cols="30" rows="10"></textarea>
         </div>
     </body>
     <script>
@@ -84,17 +128,87 @@
 
         const dir = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
 
+        document.addEventListener('keydown', (e) => {
+            if (e.keyCode === 13) {
+                genResult();
+            }
+        })
+
+        function genResult() {
+            const inputVal =  document.getElementById("arithmetic").value;
+            document.getElementById("result").innerText = "";
+            const source = [];
+
+            if (!inputVal) {
+                setErrorText("请输入内容");
+                setErrorVisible("visible");
+                return;
+            }
+
+            try {
+                for(let token of tokenize(inputVal)) {
+                    if (token.type !== "Whitespace" && token.type !== "LineTerminator") {
+                        source.push(token);
+                    }
+                }
+                // 隐藏错误提示
+                setErrorVisible("hidden");
+                setErrorText("");
+
+                if (source.length > 1) {
+                    // 得到表达式的值，并设置给 textarea 显示
+                    const result = Expression(source);
+                    document.getElementById("result").innerText = JSON.stringify(result);
+                    return ;
+                } else {
+                    setErrorText("请输入合法内容");
+                    setErrorVisible("visible");
+                    return ;
+                }
+            } catch (e) {
+                // 如果抛出错误则显示错误提示
+                setErrorText("请输入合法内容");
+                setErrorVisible("visible");
+                if (!(e === 'invalid')) {
+                    // 抛出除不合法字符的其它错误
+                    document.getElementsByClassName("error-text")[0].innerText = JSON.stringify(e, ['stack', 'message']);
+                }
+                return ;
+            }
+        }
+
+        function setErrorText (text) {
+            document.getElementsByClassName("error-text")[0].innerText = text;
+        }
+
+        function setErrorVisible (status) {
+            document.getElementsByClassName("error-tip")[0].style.visibility = status;
+        }
+
         // 返回一个序列的时候使用 yield
         function* tokenize(source) {
             let result = null;
             let lastIndex = 0;
 
             while(true) {
+
                 lastIndex = regexp.lastIndex;
                 result = regexp.exec(source);
 
+                // 字符串结尾有不合法字符
+                if (regexp.lastIndex === 0 && lastIndex !== source.length) {
+                    // throw 出去之前先将 lastIndex 设置为 0。如果不设置，下一次进来的 lastIndex 将不会更新（不会重新变为 0）。
+                    regexp.lastIndex = 0;
+                    throw ('invalid');
+                }
+
+                if (!result) break;
+
                 // 如果跨度大于匹配到值的长度，则说明中间有未添加到捕获组的字符
-                if (!result || (regexp.lastIndex - lastIndex > result[0].length)) break;
+                if (regexp.lastIndex - lastIndex > result[0].length) {
+                    regexp.lastIndex = 0;
+                    throw ('invalid');
+                }
 
                 let token = {
                     type: null,
@@ -115,17 +229,8 @@
             }
         }
 
-        let source = [];
-
-        for(let token of tokenize("10 + 25 * 2")) {
-            if (token.type !== "Whitespace" && token.type !== "LineTerminator") {
-                source.push(token);
-            }
-        }
-
         // 语法分析
-
-        function Expression(tokens) {
+        function Expression(source) {
             if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "EOF") {
                 let node = {
                     type: "Expression",
@@ -197,9 +302,6 @@
                 return source[0];
             }
         }
-
-        const mul = Expression(source)
-        console.log(mul)
 
     </script>
 </html>
