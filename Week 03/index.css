@@ -1,0 +1,105 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+button,
+input,
+textarea {
+    border: none;
+    outline: none;
+}
+
+.arithmetic-container {
+    margin: 150px auto;
+    width: 500px;
+    height: 500px;
+}
+
+.gen-btn {
+    margin-left: 20px;
+    padding: 8px 20px;
+    border-radius: 4px;
+    background: #4f8bee;
+    cursor: pointer;
+    color: #fff;
+}
+
+.ari-input {
+    padding: 7px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    width: 200px;
+    font-family: PingFangSC-Regular, serif;
+}
+
+.gen-result {
+    display: block;
+    box-sizing: border-box;
+    /*margin-top: 20px;*/
+    padding: 5px 15px;
+    border: 1px solid #dcdfe6;
+    border-radius: 4px;
+    width: 100%;
+    background-color: #fff;
+    line-height: 1.5;
+    color: #606266;
+}
+
+/* webkit内核的浏览器，如谷歌 */
+.ari-input::-webkit-input-placeholder {
+    opacity: 1;
+    font-weight: normal;
+    color: #dcdfe6;
+}
+
+.ari-input:focus,
+.gen-result:focus {
+    border-color: #409eff;
+    outline: none;
+}
+
+.error-tip {
+    display: flex;
+    visibility: hidden;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 8px 16px;
+    border-radius: 4px;
+    background-color: #fef0f0;
+    font-size: 13px;
+    color: #f56c6c;
+}
+
+.error-text {
+    margin-left: 28px;
+}
+
+.error-icon {
+    position: absolute;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    background-color: #f56c6c;
+}
+
+.error-icon::before,
+.error-icon::after {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    margin-top: -5px;
+    width: 1px;
+    height: 9px;
+    background-color: #fff;
+    content: "";
+}
+
+.error-icon::before {
+    transform: rotate(45deg);
+}
+.error-icon::after {
+    transform: rotate(-45deg);
+}

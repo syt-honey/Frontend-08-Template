@@ -5,130 +5,28 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>Arithmetic</title>
+        <link rel="stylesheet" href="./index.css">
     </head>
-
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-        }
-
-        button,
-        input,
-        textarea {
-            border: none;
-            outline: none;
-        }
-
-        .arithmetic-container {
-            width: 500px;
-            height: 500px;
-            margin: 150px auto;
-        }
-
-        .gen-btn {
-            margin-left: 20px;
-            padding: 8px 20px;
-            border-radius: 4px;
-            background: #4F8BEE;
-            color: #fff;
-            cursor: pointer;
-        }
-
-        .ari-input {
-            width: 200px;
-            padding: 7px;
-            border: 1px solid #dcdfe6;
-            border-radius: 4px;
-            font-family: PingFangSC-Regular, serif;
-        }
-
-        .gen-result {
-            display: block;
-            box-sizing: border-box;
-            /*margin-top: 20px;*/
-            padding: 5px 15px;
-            width: 100%;
-            border: 1px solid #dcdfe6;
-            border-radius: 4px;
-            color: #606266;
-            background-color: #fff;
-            line-height: 1.5;
-        }
-
-        /* webkit内核的浏览器，如谷歌 */
-        .ari-input::-webkit-input-placeholder
-        {
-            opacity:1;
-            font-weight: normal;
-            color: #dcdfe6;
-        }
-
-        .ari-input:focus,
-        .gen-result:focus {
-            outline: none;
-            border-color: #409eff;
-        }
-
-        .error-tip {
-            visibility: hidden;
-            display: flex;
-            align-items: center;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 13px;
-            background-color: #fef0f0;
-            color: #f56c6c;
-        }
-
-        .error-text {
-            margin-left: 28px;
-        }
-
-        .error-icon {
-            position: absolute;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background-color: #f56c6c;
-        }
-
-        .error-icon::before,.error-icon::after{
-            content: "";
-            position: absolute;
-            background-color: #fff;
-            height: 9px;
-            width: 1px;
-            top: 50%;
-            left: 50%;
-            margin-top: -5px;
-        }
-
-        .error-icon::before{ transform: rotate(45deg); }
-        .error-icon::after{ transform: rotate(-45deg); }
-
-    </style>
+    
     <body>
         <div class="arithmetic-container">
             <input class="ari-input" id="arithmetic" type="text" placeholder="请输入四则运算...">
-            <button class="gen-btn" onclick="genResult()">生成分析结果</button>
+            <button class="gen-btn" onclick="genResult()">生成AST分析结果</button>
             <div class="error-tip">
                 <div class="error-icon"></div>
                 <div class="error-text"></div>
             </div>
-            <textarea class="gen-result" id="result" name="生成分析结果" cols="30" rows="10"></textarea>
+            <textarea class="gen-result" id="result" name="生成AST分析结果" cols="30" rows="10"></textarea>
         </div>
     </body>
     <script>
         // LL 词法分析
-        const regexp = /([0-9\.]+)|([ \t]+)|([\r\n]+)|(\*)|(\/)|(\+)|(\-)/g;
+        const number = "[0-9\\.]+";
+        const operator = "[+\\-*\\/]";
+        const regexp = new RegExp(`(?<number>${number})|(?<operator>${operator})|(?<leftParenthesis>\\()|(?<rightParenthesis>\\))|([ \t]+)|([\r\n]+)`, "g");
+        const checkReg = /^[0-9+*-/()\s]+$/;
 
-        const dir = ["Number", "Whitespace", "LineTerminator", "*", "/", "+", "-"];
-
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener("keydown", (e) => {
             if (e.keyCode === 13) {
                 genResult();
             }
@@ -137,91 +35,82 @@
         function genResult() {
             const inputVal =  document.getElementById("arithmetic").value;
             document.getElementById("result").innerText = "";
-            const source = [];
+            let source = [];
 
-            if (!inputVal) {
+            // 判断是否输入
+            if (!inputVal || !inputVal.trim()) {
                 setErrorText("请输入内容");
                 setErrorVisible("visible");
                 return;
             }
 
+            // 判断输入的字符是否有效
+            if (!checkReg.test(inputVal)) {
+                setErrorText("请输入有效字符");
+                setErrorVisible("visible");
+                return;
+            }
+
             try {
+                let hasLP = false;
+                let hasRP = false;
+
                 for(let token of tokenize(inputVal)) {
-                    if (token.type !== "Whitespace" && token.type !== "LineTerminator") {
+                    if (token.type) {
+                        if (token.type === "LeftParenthesis") {
+                            hasLP = true;
+                        }
+                        if (token.type === "RightParenthesis") {
+                            hasRP = true;
+                        }
                         source.push(token);
                     }
                 }
+
+                // 简单判断括号是否合法
+                if ((hasRP && !hasLP) || (hasLP && !hasRP)) {
+                    setErrorText("请输入有效字符");
+                    setErrorVisible("visible");
+                    return;
+                }
+
                 // 隐藏错误提示
                 setErrorVisible("hidden");
                 setErrorText("");
 
-                if (source.length > 1) {
-                    // 得到表达式的值，并设置给 textarea 显示
-                    const result = Expression(source);
-                    document.getElementById("result").innerText = JSON.stringify(result);
-                    return ;
-                } else {
-                    setErrorText("请输入合法内容");
-                    setErrorVisible("visible");
-                    return ;
-                }
+                // 得到表达式的值，并设置给 textarea 显示
+                const result = Expression(source);
+                document.getElementById("result").innerText = JSON.stringify(result);
+
             } catch (e) {
                 // 如果抛出错误则显示错误提示
-                setErrorText("请输入合法内容");
                 setErrorVisible("visible");
-                if (!(e === 'invalid')) {
+                if (e === "invalid") {
+                    setErrorText("请输入合法内容");
+                } else {
                     // 抛出除不合法字符的其它错误
-                    document.getElementsByClassName("error-text")[0].innerText = JSON.stringify(e, ['stack', 'message']);
+                    document.getElementsByClassName("error-text")[0].innerText = JSON.stringify(e, ["stack", "message"]);
                 }
-                return ;
             }
-        }
-
-        function setErrorText (text) {
-            document.getElementsByClassName("error-text")[0].innerText = text;
-        }
-
-        function setErrorVisible (status) {
-            document.getElementsByClassName("error-tip")[0].style.visibility = status;
         }
 
         // 返回一个序列的时候使用 yield
         function* tokenize(source) {
             let result = null;
-            let lastIndex = 0;
 
-            while(true) {
+            while(result = regexp.exec(source)) {
 
-                lastIndex = regexp.lastIndex;
-                result = regexp.exec(source);
+                const { groups: {number, operator, leftParenthesis, rightParenthesis }} = result;
 
-                // 字符串结尾有不合法字符
-                if (regexp.lastIndex === 0 && lastIndex !== source.length) {
-                    // throw 出去之前先将 lastIndex 设置为 0。如果不设置，下一次进来的 lastIndex 将不会更新（不会重新变为 0）。
-                    regexp.lastIndex = 0;
-                    throw ('invalid');
+                if (number) {
+                    yield { type: "Number", value: number }
+                } else if (operator) {
+                    yield { type: "Operator", value: operator }
+                } else if (leftParenthesis) {
+                    yield { type: "LeftParenthesis", value: leftParenthesis }
+                } else if (rightParenthesis) {
+                    yield { type: "RightParenthesis", value: rightParenthesis }
                 }
-
-                if (!result) break;
-
-                // 如果跨度大于匹配到值的长度，则说明中间有未添加到捕获组的字符
-                if (regexp.lastIndex - lastIndex > result[0].length) {
-                    regexp.lastIndex = 0;
-                    throw ('invalid');
-                }
-
-                let token = {
-                    type: null,
-                    value: null
-                };
-
-                for (let i = 0; i < dir.length; ++i) {
-                    if (result[i + 1]) {
-                        token.type = dir[i];
-                    }
-                }
-                token.value = result[0];
-                yield token;
             }
 
             yield {
@@ -231,7 +120,7 @@
 
         // 语法分析
         function Expression(source) {
-            if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "EOF") {
+            if (source[0].type === "AdditiveExpression" && source[1] && (source[1].type === "EOF" || source[1].type === "RightParenthesis")) {
                 let node = {
                     type: "Expression",
                     children: [source.shift(), source.shift()]
@@ -252,7 +141,7 @@
                 return AdditiveExpression(source);
             }
 
-            if (source[0].type === "AdditiveExpression" && source[1] && (source[1].type === '+' || source[1].type === '-')) {
+            if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "Operator" && ["+", "-"].includes(source[1].value)) {
                 let node = {
                     type: "AdditiveExpression",
                     operator: source[1].type,
@@ -276,7 +165,7 @@
         }
 
         function MultiplicativeExpression(source) {
-            if (source[0].type === "Number") {
+            if (source[0].type === "NumberOrExpression") {
                 source[0] = {
                     type: "MultiplicativeExpression",
                     children: [source[0]]
@@ -284,7 +173,7 @@
                 return MultiplicativeExpression(source);
             }
 
-            if (source[0].type === "MultiplicativeExpression" && source[1] && (source[1].type === '*' || source[1].type === '/')) {
+            if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "Operator" && ["*", "/"].includes(source[1].value)) {
                 let node = {
                     type: "MultiplicativeExpression",
                     operator: source[1].type,
@@ -292,7 +181,8 @@
                 };
                 // 前三项
                 node.children.push(source.shift());
-                node.children.push(source.shift());
+                source.shift();
+                NumberOrExpression(source);
                 node.children.push(source.shift());
                 source.unshift(node);
                 return MultiplicativeExpression(source);
@@ -301,6 +191,43 @@
             if (source[0].type === "MultiplicativeExpression") {
                 return source[0];
             }
+            NumberOrExpression(source);
+            return MultiplicativeExpression(source);
+        }
+
+        function NumberOrExpression(source) {
+            if (source[0].type === "Number") {
+                let node = {
+                    type: "NumberOrExpression",
+                    children: [source.shift()]
+                };
+                source.unshift(node);
+                return NumberOrExpression(source);
+            }
+            if (source[0].type === "LeftParenthesis") {
+                let node = {
+                    type: "NumberOrExpression",
+                    children: []
+                };
+                source.shift();
+                Expression(source);
+                node.children.push(source.shift());
+                source.unshift(node);
+                return NumberOrExpression(source);
+            }
+
+            if (source[0].type === "NumberOrExpression") {
+                return source[0];
+            }
+            return NumberOrExpression(source);
+        }
+
+        function setErrorText (text) {
+            document.getElementsByClassName("error-text")[0].innerText = text;
+        }
+
+        function setErrorVisible (status) {
+            document.getElementsByClassName("error-tip")[0].style.visibility = status;
         }
 
     </script>
