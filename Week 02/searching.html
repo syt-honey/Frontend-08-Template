@@ -3,64 +3,64 @@
     <style>
         html,
         body {
-            margin: 0;
-            padding: 0;
+        	margin: 0;
+        	padding: 0;
         }
 
         .map-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
+        	display: flex;
+        	flex-direction: column;
+        	justify-content: center;
+        	align-items: center;
         }
 
         .save-button {
-            margin: 20px auto 10px;
-            padding: 5px 20px;
-            border-radius: 4px;
-            border: none;
-            outline: none;
-            background: #4F8BEE;
-            color: #fff;
-            cursor: pointer;
+        	margin: 20px auto 10px;
+        	padding: 5px 20px;
+        	border: none;
+        	border-radius: 4px;
+        	outline: none;
+        	background: #4f8bee;
+        	cursor: pointer;
+        	color: #fff;
         }
 
         .tip {
-            margin-bottom: 10px;
-            font-size: 14px;
-            color: #777373;
+        	margin-bottom: 10px;
+        	font-size: 14px;
+        	color: #777373;
         }
 
         #search-container {
-            width: 700px;
-            font-size: 0;
+        	width: 700px;
+        	font-size: 0;
         }
 
         .search-cell {
-            display: inline-block;
-            position: relative;
-            width: 6px;
-            height: 6px;
-            border-bottom: 1px solid #fff;
-            border-right: 1px solid #fff;
-            /* 消除多余的空隙：父级设置为0，当前元素正常设置。*/
-            font-size: 15px;
-            background: #d0cdcd;
-            cursor: pointer;
+        	display: inline-block;
+        	position: relative;
+        	border-right: 1px solid #fff;
+        	border-bottom: 1px solid #fff;
+        	width: 6px;
+        	height: 6px;
+        	background: #d0cdcd;
+        	cursor: pointer;
+        	/* 消除多余的空隙：父级设置为0，当前元素正常设置。*/
+        	font-size: 15px;
         }
 
         .search-cell:hover:after {
-            position: absolute;
-            left: 15px;
-            top: 5px;
-            z-index: 2;
-            width: 70px;
-            padding: 5px;
-            border-radius: 5px;
-            background-color: rgba(0, 0, 0, .5);
-            text-align: center;
-            color: #fff;
-            content: attr(positionOfPoint);
+        	position: absolute;
+        	left: 15px;
+        	top: 5px;
+        	z-index: 2;
+        	padding: 5px;
+        	border-radius: 5px;
+        	width: 70px;
+        	background-color: rgba(0, 0, 0, .5);
+        	text-align: center;
+        	color: #fff;
+        	content: attr(positionOfPoint);
         }
     </style>
     

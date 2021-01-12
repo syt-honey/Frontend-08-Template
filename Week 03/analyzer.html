@@ -89,7 +89,7 @@
                     setErrorText("请输入合法内容");
                 } else {
                     // 抛出除不合法字符的其它错误
-                    document.getElementsByClassName("error-text")[0].innerText = JSON.stringify(e, ["stack", "message"]);
+                    setErrorText(JSON.stringify(e, ["stack", "message"]));
                 }
             }
         }
@@ -120,7 +120,11 @@
 
         // 语法分析
         function Expression(source) {
-            if (source[0].type === "AdditiveExpression" && source[1] && (source[1].type === "EOF" || source[1].type === "RightParenthesis")) {
+            if (source[0].type === "AdditiveExpression"
+                && source[1]
+                && (source[1].type === "EOF"
+                    || source[1].type === "RightParenthesis")
+            ) {
                 let node = {
                     type: "Expression",
                     children: [source.shift(), source.shift()]
@@ -141,7 +145,11 @@
                 return AdditiveExpression(source);
             }
 
-            if (source[0].type === "AdditiveExpression" && source[1] && source[1].type === "Operator" && ["+", "-"].includes(source[1].value)) {
+            if (source[0].type === "AdditiveExpression"
+                && source[1]
+                && source[1].type === "Operator"
+                && ["+", "-"].includes(source[1].value)
+            ) {
                 let node = {
                     type: "AdditiveExpression",
                     operator: source[1].type,
@@ -173,7 +181,11 @@
                 return MultiplicativeExpression(source);
             }
 
-            if (source[0].type === "MultiplicativeExpression" && source[1] && source[1].type === "Operator" && ["*", "/"].includes(source[1].value)) {
+            if (source[0].type === "MultiplicativeExpression"
+                && source[1]
+                && source[1].type === "Operator"
+                && ["*", "/"].includes(source[1].value)
+            ) {
                 let node = {
                     type: "MultiplicativeExpression",
                     operator: source[1].type,
