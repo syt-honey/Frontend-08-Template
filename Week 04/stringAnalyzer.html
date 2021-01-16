@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>StringAnalyzer</title>
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+    <div class="tab-container">
+        <input type="radio" id="dir" name="tabs" checked hidden>
+        <input type="radio" id="kmp" name="tabs" hidden>
+        <input type="radio" id="wildcard" name="tabs" hidden>
+        <nav>
+            <div class="active-bar"></div>
+            <label for="dir">字典树</label>
+            <label for="kmp">KMP</label>
+            <label for="wildcard">WildCard</label>
+        </nav>
+        <main>
+            <section>
+                <div>
+                    <button class="gen-btn" onclick="genDirResult()">生成随机字符串并查询重复次数</button>
+                    <div class="gen-result">
+                        <label>查询结果：</label>
+                        <label id="dirResult">--</label>
+                    </div>
+                </div>
+                <div class="kmp-wild-container">
+                    <div>
+                        <label class="input-desc">source：</label>
+                        <input class="match-input" type="text"  id="kmp-input-source" placeholder="如：abcabcxa">
+                    </div>
+                    <button class="gen-btn" onclick="genKMPOrWildCardResult('kmp')">生成匹配结果</button>
+                    <div>
+                        <label class="input-desc">pattern：</label>
+                        <input class="match-input" type="text"  id="kmp-input-pattern" placeholder="如：abc">
+                    </div>
+                    <div class="gen-result">
+                        <label>匹配结果：</label>
+                        <label id="kmpResult">--</label>
+                    </div>
+                </div>
+                <div class="kmp-wild-container">
+                    <div>
+                        <label class="input-desc">source：</label>
+                        <input class="match-input" type="text"  id="wildcard-input-source" placeholder="如：abcddzeeefgyghi">
+                    </div>
+                    <button class="gen-btn" onclick="genKMPOrWildCardResult('wildcard')">生成匹配结果</button>
+                    <div>
+                        <label class="input-desc">pattern：</label>
+                        <input class="match-input" type="text"  id="wildcard-input-pattern" placeholder="如：abc*de*f?*ghi">
+                    </div>
+                    <div class="gen-result">
+                        <label>匹配结果：</label>
+                        <label id="wildcardResult">--</label>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="./trie.js"></script>
+    <script src="./kmp.js"></script>
+    <script src="./wildcard.js"></script>
+</body>
+<script>
+    {
+        // 生成输入框原始值
+        (function () {
+            // KMP 输入框初始化
+            document.getElementById("kmp-input-source").value = "abcabcxa";
+            document.getElementById("kmp-input-pattern").value = "abc";
+
+            // WildCard 输入框初始化
+            document.getElementById("wildcard-input-source").value = "abcdddeeefgyghi";
+            document.getElementById("wildcard-input-pattern").value = "abc*de*f?*ghi";
+
+        })()
+
+        let total = 100000;
+
+        // 字典树匹配测试
+        function genDirResult() {
+            // 生成随机字符串
+            setLoading(0).then(() => {
+
+                let trie = new Trie();
+                for (let i = 0; i < total; i++) {
+                    trie.insert(randomWord(4));
+                }
+
+                const most = trie.most();
+                const value = `总共生成了 ${total} 个字符串，其中 ${most.value}  出现次数最多，重复了 ${most.count} 次`;
+                setResult("dirResult", value);
+
+            }).then(() => {
+                removeLoading(0);
+            });
+        }
+
+        // KMP、WildCard 匹配测试
+        function genKMPOrWildCardResult(type) {
+            const source = document.getElementById(`${type}-input-source`).value;
+            const pattern = document.getElementById(`${type}-input-pattern`).value;
+
+            const result = type === 'kmp' ? kmp(source, pattern) : wildcard(source, pattern);
+            setResult(`${type}Result`, result);
+        }
+
+        function setLoading(pos) {
+            return new Promise(((resolve) => {
+                document.getElementsByClassName("gen-btn")[pos].classList.add("loading");
+                setTimeout(resolve, 800);
+            }));
+        }
+
+        function removeLoading(pos) {
+            return new Promise(((resolve) => {
+                document.getElementsByClassName("gen-btn")[pos].classList.remove("loading");
+                resolve();
+            }));
+        }
+
+        function setResult(id, value) {
+            document.getElementById(id).innerText = value;
+        }
+    }
+</script>
+</html>
