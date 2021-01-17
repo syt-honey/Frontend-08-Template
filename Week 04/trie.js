@@ -4,7 +4,6 @@
      * 功能：
      * 1. 单词的插入
      * 2. 词频统计
-     * TODO：是否可以指定单词来查找频率呢？
      * @type {symbol}
      */
     let $ = Symbol("$");
@@ -52,11 +51,32 @@
             };
         }
 
-        // 字典树最小/最大，对数字进行补位处理一下
-        // 哈希树的一个特例
+        // 指定某值，查询出现次数
+        freq(key) {
+            let p = key.split("");
+            let freq = 0;
+            let has = false;
+            let visit = (node, str) => {
+                if (!node[str] && !node[$] && node[$] !== 0 || (node[$] && str)) {
+                    // 查找的字符不在 root 中、输入的 key 的长度大于 root 当前字符的长度（包含关系）
+                    has = false;
+                } else if (node[$]) {
+                    has = true;
+                    freq = node[$];
+                } else {
+                    visit(node[str], p.shift());
+                }
+            }
+            visit(this.root, p.shift());
+            return {
+                value: key,
+                has,
+                count: freq
+            }
+        }
     }
 
-    // 随机产生字符
+    // 生成随机字符串
     function randomWord(length) {
         let s = "";
         for (let i = 0; i < length; i++) {

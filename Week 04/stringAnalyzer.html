@@ -27,6 +27,14 @@
                         <label>查询结果：</label>
                         <label id="dirResult">--</label>
                     </div>
+                    <div class="gen-result">
+                        <input class="match-input" type="text"  id="dir-input" placeholder="输入长度为 4 的字符串">
+                        <button class="gen-btn" onclick="queryFre()">查询出现频率</button>
+                    </div>
+                    <div class="gen-result">
+                        <label>查询结果：</label>
+                        <label id="dirFreResult">--</label>
+                    </div>
                 </div>
                 <div class="kmp-wild-container">
                     <div>
@@ -66,9 +74,23 @@
     <script src="./wildcard.js"></script>
 </body>
 <script>
-    {
+    // {
+        const CONSTANT = {
+            TRIE_INPUT: 1,
+            TRIE_RESULT: 2,
+            TRIE_BTN_GEN: 0,
+            TRIE_BTN_QUE: 1,
+            TOTAL: 100000,
+            LEN: 4
+        };
+
         // 生成输入框原始值
         (function () {
+
+            // 隐藏 Trie 中的输入框
+            document.getElementsByClassName('gen-result')[CONSTANT.TRIE_INPUT].style.visibility = 'hidden';
+            document.getElementsByClassName('gen-result')[CONSTANT.TRIE_RESULT].style.visibility = 'hidden';
+
             // KMP 输入框初始化
             document.getElementById("kmp-input-source").value = "abcabcxa";
             document.getElementById("kmp-input-pattern").value = "abc";
@@ -77,33 +99,51 @@
             document.getElementById("wildcard-input-source").value = "abcdddeeefgyghi";
             document.getElementById("wildcard-input-pattern").value = "abc*de*f?*ghi";
 
-        })()
+        })();
 
-        let total = 100000;
+        let trie = new Trie();
 
         // 字典树匹配测试
         function genDirResult() {
             // 生成随机字符串
-            setLoading(0).then(() => {
+            setLoading(CONSTANT.TRIE_BTN_GEN).then(() => {
 
-                let trie = new Trie();
-                for (let i = 0; i < total; i++) {
-                    trie.insert(randomWord(4));
+                for (let i = 0; i < CONSTANT.TOTAL; i++) {
+                    trie.insert(randomWord(CONSTANT.LEN));
                 }
 
                 const most = trie.most();
-                const value = `总共生成了 ${total} 个字符串，其中 ${most.value}  出现次数最多，重复了 ${most.count} 次`;
+                const value = `总共生成了 ${CONSTANT.TOTAL} 个字符串，其中 ${most.value} 出现次数最多，重复了 ${most.count} 次。`;
                 setResult("dirResult", value);
 
+                // 生成完成后清空输入框并显示
+                document.getElementById('dir-input').value = "";
+                document.getElementsByClassName('gen-result')[CONSTANT.TRIE_INPUT].style.visibility = 'visible';
+                document.getElementsByClassName('gen-result')[CONSTANT.TRIE_RESULT].style.visibility = 'visible';
+
+
             }).then(() => {
-                removeLoading(0);
+                removeLoading(CONSTANT.TRIE_BTN_GEN);
+            });
+        }
+
+        function queryFre() {
+            setLoading(CONSTANT.TRIE_BTN_QUE).then(() => {
+                const source = document.getElementById('dir-input').value.trim();
+                const res = trie.freq(source);
+
+                const value = res.has ? `字符串 ${source} 在出现了 ${res.count} 次。` : `随机生成的字符串中没有您要查找的字符串哦～`;
+                setResult("dirFreResult", value);
+
+            }).then(() => {
+                removeLoading(CONSTANT.TRIE_BTN_QUE);
             });
         }
 
         // KMP、WildCard 匹配测试
         function genKMPOrWildCardResult(type) {
-            const source = document.getElementById(`${type}-input-source`).value;
-            const pattern = document.getElementById(`${type}-input-pattern`).value;
+            const source = document.getElementById(`${type}-input-source`).value.trim();
+            const pattern = document.getElementById(`${type}-input-pattern`).value.trim();
 
             const result = type === 'kmp' ? kmp(source, pattern) : wildcard(source, pattern);
             setResult(`${type}Result`, result);
@@ -126,6 +166,6 @@
         function setResult(id, value) {
             document.getElementById(id).innerText = value;
         }
-    }
+    // }
 </script>
 </html>
