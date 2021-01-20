@@ -1,5 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Searching</title>
+    </head>
     <style>
         html,
         body {
@@ -72,9 +78,8 @@
         </div>
     </body>
 
-    <script src="../utils/index.js"></script>
-
-    <script>
+    <script type="module">
+        import { utils } from "../utils";
         const rowMap = sessionStorage['map'] ? JSON.parse(sessionStorage['map']) : Array(10000).fill(0);
 
         // 注册全局监听事件
@@ -177,7 +182,7 @@
                     while (x !== start[0] || y !== start[1]) {
                         path.push([x, y]);
                         [x, y] = table[x * 100 + y];
-                        await window.utils.sleep(5);
+                        await utils.sleep(5);
                         if (x === start[0] && y === start[1])
                             continue;
                         container.children[x * 100 + y].style.background = 'purple';
@@ -202,7 +207,7 @@
                     return;
                 }
 
-                await window.utils.sleep(5);
+                await utils.sleep(5);
                 if (x !== start[0] || y !== start[1]) {
                     container.children[x * 100 + y].style.background = 'lightgreen';
                 }
