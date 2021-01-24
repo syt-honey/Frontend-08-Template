@@ -16,17 +16,16 @@ body {
     margin-bottom: 25px;
     border-radius: inherit;
     height: 150px;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)), linear-gradient(to left, rgba(0, 0, 0, 0), rgba(255, 255, 255, 1));
+    background:
+            linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1)),
+            linear-gradient(to left, rgba(0, 0, 0, 0), rgba(255, 255, 255, 1));
     background-color: red;
 }
 
 .color-indicator {
     position: absolute;
-    left: -6px;
-    top: -6px;
     width: 12px;
     height: 12px;
-    transform: translate(-6px, -6px);
     border-radius: 50%;
     border: 1px solid white;
     cursor: pointer;
@@ -39,11 +38,24 @@ body {
     border-radius: 50%;
     width: 32px;
     height: 32px;
-    background: linear-gradient(45deg, rgba(0, 0, 0, .25) 25%,
-        transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 0 0 / 12px 12px,
-        linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 6px 6px / 12px 12px;
+    background:
+            linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 0 0 / 12px 12px,
+            linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 6px 6px / 12px 12px;
     background-color: rgba(255, 255, 255, .5);
+    cursor: pointer;
 }
+
+/* TODO hover to paste */
+/*.hover {*/
+/*    position: relative;*/
+/*    height: 100%;*/
+/*    border-radius: 50%;*/
+/*    background: transparent;*/
+/*}*/
+
+/*.hover:hover {*/
+/*    background: rgba(0, 0, 0, .4);*/
+/*}*/
 
 .palette {
     position: relative;
@@ -60,9 +72,24 @@ body {
     margin-bottom: 20px;
 }
 
-.result {
+.result > .hsla {
+    margin: 10px auto;
+    width: 209px;
+    color: #d6d3d3;
+}
+
+.result > .hsla > input {
+    padding: 5px 6px;
+    border-radius: 0;
+    border: 1px solid #eee;
+    width: 34px;
     text-align: center;
-    color: #aaa;
+}
+
+.result > .hsla > label {
+    display: inline-block;
+    text-align: center;
+    width: 48px;
 }
 
 .hue-slider {
@@ -84,9 +111,9 @@ body {
 }
 
 .alpha-slider {
-    background: linear-gradient(45deg, rgba(0, 0, 0, .25) 25%,
-        transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 0 0 / 12px 12px,
-        linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 6px 6px / 12px 12px;
+    background:
+            linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 0 0 / 12px 12px,
+            linear-gradient(45deg, rgba(0, 0, 0, .25) 25%, transparent 0, transparent 75%, rgba(0, 0, 0, .25) 0) 6px 6px / 12px 12px;
     background-color: rgba(255, 255, 255, .5);
 }
 

@@ -28,6 +28,7 @@ class DragContext {
     }
 
     setDraggerStyles(e) {
+        // 类似于 css 中的 clamp
         this.x = utils.getBounding(e.clientX - this.rect.left, 0, this.rect.width);
         this.y = utils.getBounding(e.clientY - this.rect.top, 0, this.rect.height);
 
@@ -36,7 +37,8 @@ class DragContext {
         } else if (this.direction === 'vertical') {
             this.dragger.style.transform = `translate(0, ${this.y}px)`;
         } else if (this.direction === 'both') {
-            this.dragger.style.transform = `translate(${this.x}px, ${this.y}px)`;
+            // -7px，需要根据本身的大小来定。改变偏移中心，更直观
+            this.dragger.style.transform = `translate(${this.x - 7}px, ${this.y - 7}px)`;
         }
 
         StyleRender.getInstance().evaluate();
@@ -46,7 +48,6 @@ class DragContext {
         this.dragger.addEventListener('mousedown', (e) => {
             this.setDraggerStyles(e);
             this.isDragging = true;
-            this.valueOf()
         })
     }
 
@@ -55,7 +56,7 @@ class DragContext {
             if (this.isDragging) {
                 this.setDraggerStyles(e);
             }
-        })
+        });
     }
 
     addMouseup() {
@@ -63,7 +64,7 @@ class DragContext {
             this.isDragging = false;
             document.removeEventListener('mousemove', {});
             document.removeEventListener('mouseup', {});
-        })
+        });
     }
 
     valueOf() {

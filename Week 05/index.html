@@ -14,29 +14,57 @@
         <div class="color-indicator" name="palette"></div>
     </div>
 <!--     hover to paste-->
-    <div class="preview"></div>
+    <div class="preview">
+        <div class="hover"></div>
+    </div>
     <div class="hue-slider palette" name="hue">
         <div class="slider-indicator" name="hue"></div>
     </div>
     <div class="alpha-slider palette" name="alpha">
         <div class="slider-indicator" name="alpha"></div>
     </div>
-    <div class="result">rgba(255, 255, 255, 1)</div>
-<!--    TODO 动态模版-->
-<!--<div id="template">Hello,{{name}}</div>-->
+    <div class="result">
+        <div class="hsla">
+            <input type="text" name="H">
+            <input type="text" name="S">
+            <input type="text" name="L">
+            <input type="text" name="A">
+            <label>H</label>
+            <label>S</label>
+            <label>L</label>
+            <label>A</label>
+        </div>
+    </div>
+<!--    <div class="sample">-->
+<!--        Change my color pls!-->
+<!--    </div>-->
 </div>
 <!--<script src="./proxy.js"></script>-->
 </body>
 <script type="module">
     import { DragContext } from './drag.js';
     import { StyleRender } from './render.js';
+    // import { effect } from "./proxy.js";
 
     const doms = {};
     const dragContexts = [];
 
     kickPicker();
     kickSliders();
+    // 初始化
     StyleRender.getInstance(doms, dragContexts);
+
+    // effect(() => {
+    //     const hslaList = StyleRender.getInstance(doms, dragContexts).getHSL();
+    //
+    //     console.log(document.getElementsByClassName('sample')[0])
+    //
+    //     const hslaColor = `hsla(${hslaList[0]}, ${hslaList[1]}, ${hslaList[2]}, ${hslaList[3]})`;
+    //
+    //     console.log(hslaColor)
+    //
+    //     document.getElementsByClassName('sample')[0].style.color = `${hslaColor}`;
+    // })
 
     function kickPicker () {
         // 获取色盘有关节点并缓存
@@ -71,7 +99,7 @@
                 dragger,
                 name,
                 direction: 'horizontal',
-                initX: 120
+                initX: 155
             });
         });
 
