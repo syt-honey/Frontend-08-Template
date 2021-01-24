@@ -92,6 +92,10 @@ body {
     width: 48px;
 }
 
+.sample {
+    margin: 40px;
+}
+
 .hue-slider {
     background: linear-gradient(to left,
         hsl(0, 100%, 50%) 0%,

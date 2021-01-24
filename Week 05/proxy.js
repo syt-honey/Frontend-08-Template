@@ -27,14 +27,14 @@ function reactive(obj) {
     }
     let proxy =  new Proxy(obj, {
         set(obj, prop, val) {
-            console.log(obj, prop, val);
             obj[prop] = val;
             if (callbacks.get(obj) && callbacks.get(obj).get(prop)) {
                 for(let callback of callbacks.get(obj).get(prop)) {
                     callback();
                 }
             }
-            return obj[prop];
+            // ! 必须要返回 true，否则将出现 "trap returned falsish for property 'hue'"
+            return true;
         },
         get(obj, prop) {
             // 每次调用依赖过的 reactive 对象都将它们收集起来
