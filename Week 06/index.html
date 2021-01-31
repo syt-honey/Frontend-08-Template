@@ -23,15 +23,16 @@
 </body>
 <script>
 
-    const arr = Array(64).fill('');
+    const arr = Array(64).fill("");
 
     // 初始化格子
-    const container = document.getElementById('number-container');
+    const container = document.getElementById("number-container");
 
     function init() {
+        container.innerHTML = "";
         const itemList = document.createDocumentFragment();
         arr.forEach((value, index) => {
-            const newEl = document.createElement('div');
+            const newEl = document.createElement("div");
 
             if (index === 0) {
                 newEl.classList.add("sign-cell");
@@ -46,6 +47,7 @@
         });
 
         container.appendChild(itemList);
+        document.getElementById("correct").innerText = "";
     }
 
     init();
@@ -66,9 +68,11 @@
 
         let val = Number(value);
 
-        if ( isNaN(val) || typeof val !== 'number' ) {
+        if ( isNaN(val) || typeof val !== "number" ) {
             return false;
         }
+
+        document.getElementById("correct").innerText = val.toString(2);
 
         // 设置符号位
         setS(val);
@@ -76,7 +80,7 @@
         // 先转换为二进制浮点数，再使用二进制的科学计数法表示，求出 E 和 M 的值
 
         let str = val.toString(2);
-        let temStr = str / Number(1 + Array(str.split(".")[0].length - 1).fill(0).join(''));
+        let temStr = str / Number(1 + Array(str.split(".")[0].length - 1).fill(0).join(""));
 
         let E = val < 0 ? str.split(".")[0].length - 2 : str.split(".")[0].length - 1;
         let M = String(temStr).split(".")[1];
@@ -86,19 +90,21 @@
         // 设置指数位、尾数位
         setE(E);
         setM(M);
+
+        return true;
     }
 
     function setE(E) {
         let temE = (E + 1023).toString(2);
-        for(let i = 2 ; i < 13; ++i) {
-            document.getElementById('number-container').childNodes[i].innerText = temE[i - 2];
+        for(let i = 1 ; i < 12; ++i) {
+            document.getElementById("number-container").childNodes[i].innerText = temE[i - 1];
         }
     }
 
     function setM(M) {
-        let temM = M + Array(52 - M.length).fill(0).join('');
-        for(let i = 13 ; i < 65; ++i) {
-            document.getElementById('number-container').childNodes[i].innerText = temM[i - 13];
+        let temM = M + Array(52 - M.length).fill(0).join("");
+        for(let i = 12 ; i < 64; ++i) {
+            document.getElementById("number-container").childNodes[i].innerText = temM[i - 12];
         }
     }
 
@@ -106,13 +112,19 @@
      * 设置符号位样式
      */
     function setS(val) {
-        document.getElementById('number-container').childNodes[1].innerText = Number(val < 0);
+        console.log(document.getElementById("number-container").childNodes)
+        document.getElementById("number-container").childNodes[0].innerText = Number(val < 0);
     }
 
     function confirm() {
-        const inputValue = document.getElementById('number-input').value;
-        document.getElementById('correct').innerText = Number(inputValue).toString(2);
-        setByte(inputValue);
+        const inputValue = document.getElementById("number-input").value;
+        if (!(inputValue.trim()) || !setByte(inputValue)) {
+            init();
+            console.log("请输入有效的十进制数")
+        } else {
+            setByte(inputValue);
+        }
     }
+
 </script>
 </html>
