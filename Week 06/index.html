@@ -23,7 +23,20 @@
 </body>
 <script>
 
-    const arr = Array(64).fill("");
+    // 有关 IEEE 745 双精度浮点数存储常量。有关 IEEE 745 双精度浮点数也可以查看：https://zh.wikipedia.org/wiki/IEEE_754#64%E4%BD%8D%E9%9B%99%E7%B2%BE%E5%BA%A6
+    const CONSTANT = {
+        TOTAL_BIT: 64,
+        S_INDEX: 0,
+        E_INDEX: 1,
+        M_INDEX: 12,
+        S_LEN: 1,
+        E_LEN: 11,
+        M_LEN: 52,
+        VALUE_OF_0X3FF: 1023,
+        TO_BINARY_STRING: 2
+    }
+
+    const arr = Array(CONSTANT.TOTAL_BIT).fill("");
 
     // 初始化格子
     const container = document.getElementById("number-container");
@@ -34,9 +47,9 @@
         arr.forEach((value, index) => {
             const newEl = document.createElement("div");
 
-            if (index === 0) {
+            if (index === CONSTANT.S_INDEX) {
                 newEl.classList.add("sign-cell");
-            } else if (index > 0 && index < 12) {
+            } else if (index > CONSTANT.S_INDEX && index < CONSTANT.M_INDEX) {
                 newEl.classList.add("exp-cell");
             } else {
                 newEl.classList.add("fra-cell");
@@ -72,14 +85,14 @@
             return false;
         }
 
-        document.getElementById("correct").innerText = val.toString(2);
+        document.getElementById("correct").innerText = val.toString(CONSTANT.TO_BINARY_STRING);
 
         // 设置符号位
         setS(val);
 
         // 先转换为二进制浮点数，再使用二进制的科学计数法表示，求出 E 和 M 的值
 
-        let str = val.toString(2);
+        let str = val.toString(CONSTANT.TO_BINARY_STRING);
         let temStr = str / Number(1 + Array(str.split(".")[0].length - 1).fill(0).join(""));
 
         let E = val < 0 ? str.split(".")[0].length - 2 : str.split(".")[0].length - 1;
@@ -95,16 +108,16 @@
     }
 
     function setE(E) {
-        let temE = (E + 1023).toString(2);
-        for(let i = 1 ; i < 12; ++i) {
-            document.getElementById("number-container").childNodes[i].innerText = temE[i - 1];
+        let temE = (E + CONSTANT.VALUE_OF_0X3FF).toString(CONSTANT.TO_BINARY_STRING);
+        for(let i = CONSTANT.E_INDEX ; i < CONSTANT.M_INDEX; ++i) {
+            document.getElementById("number-container").childNodes[i].innerText = temE[i - CONSTANT.S_LEN];
         }
     }
 
     function setM(M) {
-        let temM = M + Array(52 - M.length).fill(0).join("");
-        for(let i = 12 ; i < 64; ++i) {
-            document.getElementById("number-container").childNodes[i].innerText = temM[i - 12];
+        let temM = M + Array(CONSTANT.M_LEN - M.length).fill(0).join("");
+        for(let i = CONSTANT.M_INDEX ; i < CONSTANT.TOTAL_BIT; ++i) {
+            document.getElementById("number-container").childNodes[i].innerText = temM[i - (CONSTANT.E_LEN  + CONSTANT.S_LEN)];
         }
     }
 
@@ -112,8 +125,7 @@
      * 设置符号位样式
      */
     function setS(val) {
-        console.log(document.getElementById("number-container").childNodes)
-        document.getElementById("number-container").childNodes[0].innerText = Number(val < 0);
+        document.getElementById("number-container").childNodes[CONSTANT.S_INDEX].innerText = Number(val < 0);
     }
 
     function confirm() {
