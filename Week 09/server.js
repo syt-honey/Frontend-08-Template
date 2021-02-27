@@ -27,6 +27,10 @@ http.createServer((req, res) => {
                       border: none;
                       animation: trafficSignal linear 6s infinite;
                     }
+                    
+                    div div {
+                        width: 20px;
+                    }
                   </style>
                 </head>
                 <body>

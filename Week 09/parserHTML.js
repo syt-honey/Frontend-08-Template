@@ -1,3 +1,4 @@
+const { addCSSRules, computeCSS } = require("./parseCSS.js");
 const EOF = Symbol("EOF");
 let currentToken = null;
 let currentAttribute = null;
@@ -9,9 +10,9 @@ let stack = [{
     tagName: null
 }];
 
+let currentTextNode = null;
 function emit (token) {
     let top = stack[stack.length - 1];
-    let currentTextNode = {};
 
     if (token.type === "startTag") {
         // DOM 树中只会有 node 和 element
@@ -34,6 +35,8 @@ function emit (token) {
             }
         }
 
+        computeCSS(element, stack);
+
         top.children.push(element);
         element.parent = top;
 
@@ -47,11 +50,17 @@ function emit (token) {
             // 理论上来说应该有一定容错性
             throw new Error("Tag start end doesn't match!");
         } else {
+            // 暂时只考虑 style 标签和内联形式
+            if (top.tagName === "style") {
+                addCSSRules(top.children[0].content);
+            }
+
             stack.pop();
         }
         currentTextNode = null;
     } else if (token.type === "text") {
-        if (!currentTextNode) {
+        // 将所有的文本合在一起
+        if (currentTextNode === null) {
             currentTextNode = {
                 type: "text",
                 content: ""

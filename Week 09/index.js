@@ -21,7 +21,6 @@ const parser = require("./parserHTML.js");
 
     // 3. 将转码后获取到的 HTML 进行 parser 返回构建后 DOM 树
     let dom = parser.parserHTML(res.body);
-    console.log(dom);
 
     // 4. 收集 CSS 规则，对 CSS 规则进行 parser，返回 Style Rules
 
