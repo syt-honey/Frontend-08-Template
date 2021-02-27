@@ -199,7 +199,7 @@ function doubleQuotedAttributeValue(w) {
 function singleQuotedAttributeValue(w) {
     if (w === "'") {
         currentToken[currentAttribute.name] = currentAttribute.value;
-        return afterAttributeValue;
+        return afterQuotedAttributeValue;
     } else if (w === "\u0000") {
 
     } else if (w === EOF) {
