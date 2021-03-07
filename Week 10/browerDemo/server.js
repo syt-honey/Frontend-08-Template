@@ -20,7 +20,6 @@ http.createServer((req, res) => {
                       flex-direction: row-reverse;
                       justify-content: space-around;
                       flex-wrap: wrap;
-                      align-items: center;
                       height: 500px;
                       width: 500px;
                       background-color: #606266;
