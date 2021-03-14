@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Match</title>
+</head>
+
+<body>
+<div>
+    <div class="main-container">
+        <div id="title">
+            <h2>this is title</h2>
+            <input type="text" id="match-input" class="input">
+        </div>
+    </div>
+</div>
+</body>
+<script type="module">
+    import { selectorParse } from "./selectorParse.js";
+
+    let selectorList = [];
+
+    // tag id class
+    match("div #title .input", document.getElementById("match-input"));
+
+    function match(selector, element) {
+        // 利用状态机获取选择器列表
+        selectorList = selectorParse(selector).reverse();
+        let matched = queryElementBySelector(element, 0);
+        console.log(matched);
+    }
+
+    function queryElementBySelector(element, index) {
+
+        let i = index;
+        if (!element) {
+            return false;
+        }
+
+        let item = selectorList[i];
+        if (item.type === "class") {
+            if (element.classList.length === 0 || !element.classList.contains(item.name)) {
+                return false;
+            }
+        } else if (item.type === "tag") {
+            if (!element.tagName || element.tagName.toLocaleLowerCase() !== item.name) {
+                return false;
+            }
+        } else if (item.type === "id") {
+            if (!element.id || element.id.toLocaleLowerCase() !== item.name) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+
+        if (i === selectorList.length - 1) {
+            // 匹配完成
+            return true;
+        }
+        return queryElementBySelector(element.parentNode, ++i);
+    }
+
+</script>
+</html>
